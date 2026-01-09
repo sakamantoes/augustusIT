@@ -1,1164 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Note Summarizer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-            padding: 15px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 20px 15px;
-            background: linear-gradient(135deg, #160727 0%, #391b58 100%);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            opacity: 0.9;
-            padding: 0 10px;
-        }
-
-        .app-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-
-        .note-section, .summary-section {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            width: 100%;
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-            font-size: clamp(1.2rem, 3vw, 1.4rem);
-        }
-
-        .section-title i {
-            color: #160727;
-            font-size: clamp(1.2rem, 3vw, 1.4rem);
-        }
-
-        .note-input {
-            width: 100%;
-            height: 300px;
-            padding: 15px;
-            border: 2px solid #e1e5eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            resize: vertical;
-            margin-bottom: 15px;
-            transition: border 0.3s;
-        }
-
-        .note-input:focus {
-            outline: none;
-            border-color: #6a11cb;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            flex: 1;
-            min-width: 140px;
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background-color: #160727;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0e0519;
-            transform: translateY(-2px);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background-color: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e0e0e0;
-        }
-
-        .summary-output {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            min-height: 200px;
-            border: 2px dashed #e1e5eb;
-            margin-bottom: 20px;
-            line-height: 1.7;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            word-break: break-word;
-            position: relative;
-        }
-
-        .summary-output.empty {
-            color: #888;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .stats {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border-left: 4px solid #6a11cb;
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-            flex: 1;
-            min-width: 100px;
-        }
-
-        .stat-value {
-            font-size: clamp(1.4rem, 3vw, 1.8rem);
-            font-weight: 700;
-            color: #160727;
-        }
-
-        .stat-label {
-            font-size: clamp(0.8rem, 2vw, 0.9rem);
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .instructions {
-            background-color: #eef5ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 25px;
-            border-left: 4px solid #2575fc;
-        }
-
-        .instructions h3 {
-            margin-bottom: 10px;
-            color: #2c3e50;
-            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-        }
-
-        .instructions ul {
-            padding-left: 20px;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-            font-size: clamp(0.9rem, 2vw, 1rem);
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            color: #666;
-            font-size: clamp(0.8rem, 2vw, 0.9rem);
-            line-height: 1.5;
-        }
-
-        .compression-slider {
-            width: 100%;
-            margin: 15px 0;
-        }
-
-        .slider-container {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .slider-label {
-            font-weight: 600;
-            color: #2c3e50;
-            min-width: 150px;
-            font-size: clamp(0.9rem, 2vw, 1rem);
-        }
-
-        .slider-value {
-            font-weight: 700;
-            color: #6a11cb;
-            min-width: 40px;
-            font-size: clamp(0.9rem, 2vw, 1rem);
-        }
-
-        /* Loader styles */
-        .loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .loader-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .loader {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            background: linear-gradient(0deg, rgba(22, 7, 39, 0.2) 33%, #160727 100%);
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-
-        .loader::after {
-            content: '';  
-            box-sizing: border-box;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: white;
-        }
-
-        .loader-text {
-            position: absolute;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 100px;
-            text-align: center;
-            width: 100%;
-        }
-
-        .loader-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg) }
-            100% { transform: rotate(360deg) }
-        }
-
-        .btn-loader {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: button-spinner 0.8s linear infinite;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-loader.active {
-            opacity: 1;
-        }
-
-        .btn-text {
-            transition: opacity 0.3s;
-        }
-
-        .btn.loading .btn-text {
-            opacity: 0.5;
-        }
-
-        @keyframes button-spinner {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Processing animation for summary area */
-        .summary-processing {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(249, 249, 249, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            z-index: 10;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .summary-processing.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .summary-loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(22, 7, 39, 0.1);
-            border-radius: 50%;
-            border-top-color: #160727;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Progress bar */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background-color: #e0e0e0;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .progress-container.active {
-            display: block;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #160727, #391b58);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .app-container {
-                gap: 20px;
-            }
-            
-            .note-section, .summary-section {
-                padding: 15px;
-            }
-            
-            .note-input {
-                height: 250px;
-                font-size: 0.95rem;
-            }
-            
-            .btn {
-                padding: 10px 15px;
-                min-width: 120px;
-                font-size: 0.9rem;
-            }
-            
-            .controls {
-                gap: 10px;
-            }
-            
-            .slider-container {
-                gap: 10px;
-            }
-            
-            .slider-label {
-                min-width: 130px;
-            }
-            
-            .stats {
-                gap: 10px;
-                padding: 12px;
-            }
-            
-            .stat-item {
-                min-width: 80px;
-            }
-
-            .loader-container {
-                padding: 30px;
-                margin: 0 20px;
-            }
-
-            .loader {
-                width: 60px;
-                height: 60px;
-            }
-
-            .loader::after {
-                width: 50px;
-                height: 50px;
-            }
-
-            .loader-text {
-                font-size: 1rem;
-                margin-top: 80px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            header {
-                padding: 15px 10px;
-                margin-bottom: 15px;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .subtitle {
-                font-size: 0.9rem;
-            }
-            
-            .note-section, .summary-section {
-                padding: 12px;
-                border-radius: 8px;
-            }
-            
-            .section-title {
-                font-size: 1.2rem;
-                margin-bottom: 15px;
-            }
-            
-            .note-input {
-                height: 200px;
-                padding: 12px;
-                font-size: 0.9rem;
-                margin-bottom: 12px;
-            }
-            
-            .btn {
-                padding: 10px;
-                min-width: 100px;
-                font-size: 0.85rem;
-            }
-            
-            .controls {
-                gap: 8px;
-                margin-bottom: 15px;
-            }
-            
-            .summary-output {
-                padding: 15px;
-                min-height: 180px;
-                font-size: 0.95rem;
-            }
-            
-            .slider-container {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .slider-label {
-                min-width: auto;
-            }
-            
-            .compression-slider {
-                width: 100%;
-            }
-            
-            .stats {
-                flex-direction: column;
-                gap: 15px;
-                align-items: center;
-            }
-            
-            .stat-item {
-                min-width: auto;
-                width: 100%;
-                max-width: 200px;
-            }
-            
-            .instructions {
-                padding: 15px;
-            }
-            
-            footer {
-                padding-top: 15px;
-                font-size: 0.8rem;
-            }
-
-            .loader-container {
-                padding: 20px;
-                margin: 0 15px;
-            }
-
-            .loader {
-                width: 50px;
-                height: 50px;
-            }
-
-            .loader::after {
-                width: 40px;
-                height: 40px;
-            }
-
-            .loader-text {
-                font-size: 0.9rem;
-                margin-top: 70px;
-            }
-        }
-        
-        @media (max-width: 350px) {
-            .btn {
-                min-width: 100%;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-        }
-        
-        /* Extra small screens (smartphones in portrait) */
-        @media (max-width: 320px) {
-            body {
-                padding: 8px;
-            }
-            
-            .note-input {
-                height: 180px;
-                font-size: 0.85rem;
-            }
-            
-            .summary-output {
-                min-height: 160px;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* Large screens */
-        @media (min-width: 1200px) {
-            .note-input {
-                height: 350px;
-            }
-            
-            .summary-output {
-                min-height: 250px;
-            }
-        }
-        
-        /* Print styles */
-        @media print {
-            .btn, .compression-slider, .instructions, footer,
-            .loader-overlay, .progress-container {
-                display: none;
-            }
-            
-            .note-section, .summary-section {
-                box-shadow: none;
-                border: 1px solid #ddd;
-            }
-        }
-    </style>
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css">
+   
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1><i class="fas fa-sticky-note"></i> Simple Note Summarizer</h1>
-            <p class="subtitle">Write detailed notes and get concise summaries instantly</p>
-        </header>
+      <header>
+        <h1><i class="fas fa-sticky-note"></i> Simple Note Summarizer</h1>
+        <p class="subtitle">
+          Write detailed notes and get concise summaries instantly
+        </p>
+      </header>
 
-        <div class="app-container">
-            <section class="note-section">
-                <div class="section-title">
-                    <i class="fas fa-edit"></i>
-                    <h2>Your Note</h2>
-                </div>
-                
-                <textarea class="note-input" id="noteInput" placeholder="Start typing your note here... You can paste a large text or write your own detailed notes. The app will summarize it for you.">Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. Leading AI textbooks define the field as the study of "intelligent agents": any system that perceives its environment and takes actions that maximize its chance of achieving its goals. Some popular accounts use the term "artificial intelligence" to describe machines that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving", however, this definition is rejected by major AI researchers.
+      <div class="app-container">
+        <section class="note-section">
+          <div class="section-title">
+            <i class="fas fa-edit"></i>
+            <h2>Your Note</h2>
+          </div>
+
+          <textarea
+            class="note-input"
+            id="noteInput"
+            placeholder="Start typing your note here... You can paste a large text or write your own detailed notes. The app will summarize it for you."
+          >
+Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. Leading AI textbooks define the field as the study of "intelligent agents": any system that perceives its environment and takes actions that maximize its chance of achieving its goals. Some popular accounts use the term "artificial intelligence" to describe machines that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving", however, this definition is rejected by major AI researchers.
 
 AI applications include advanced web search engines (e.g., Google Search), recommendation systems (used by YouTube, Amazon and Netflix), understanding human speech (such as Siri and Alexa), self-driving cars (e.g., Waymo), automated decision-making and competing at the highest level in strategic game systems (such as chess and Go). As machines become increasingly capable, tasks considered to require "intelligence" are often removed from the definition of AI, a phenomenon known as the AI effect. For instance, optical character recognition is frequently excluded from things considered to be AI, having become a routine technology.
 
 Artificial intelligence was founded as an academic discipline in 1956, and in the years since has experienced several waves of optimism, followed by disappointment and the loss of funding (known as an "AI winter"), followed by new approaches, success and renewed funding. AI research has tried and discarded many different approaches during its lifetime, including simulating the brain, modeling human problem solving, formal logic, large databases of knowledge and imitating animal behavior. In the first decades of the 21st century, highly mathematical and statistical machine learning has dominated the field, and this technique has proved highly successful, helping to solve many challenging problems throughout industry and academia.
 
-The various sub-fields of AI research are centered around particular goals and the use of particular tools. The traditional goals of AI research include reasoning, knowledge representation, planning, learning, natural language processing, perception, and the ability to move and manipulate objects. General intelligence (the ability to solve an arbitrary problem) is among the field's long-term goals. To solve these problems, AI researchers have adapted and integrated a wide range of problem-solving techniques, including search and mathematical optimization, formal logic, artificial neural networks, and methods based on statistics, probability and economics. AI also draws upon computer science, psychology, linguistics, philosophy, and many other fields.</textarea>
-                
-                <div class="progress-container" id="progressContainer">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
-                
-                <div class="controls">
-                    <button class="btn btn-primary" id="summarizeBtn">
-                        <div class="btn-loader" id="btnLoader"></div>
-                        <i class="fas fa-compress-alt"></i> 
-                        <span class="btn-text">Summarize Note</span>
-                    </button>
-                    <button class="btn btn-secondary" id="clearBtn">
-                        <i class="fas fa-trash-alt"></i> 
-                        <span class="btn-text">Clear Note</span>
-                    </button>
-                    <button class="btn btn-secondary" id="exampleBtn">
-                        <i class="fas fa-lightbulb"></i> 
-                        <span class="btn-text">Load Example</span>
-                    </button>
-                </div>
-                
-                <div class="slider-container">
-                    <div class="slider-label">Summary Length:</div>
-                    <input type="range" min="10" max="90" value="40" class="compression-slider" id="compressionSlider">
-                    <div class="slider-value" id="sliderValue">40%</div>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="charCount">0</div>
-                        <div class="stat-label">Characters</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="wordCount">0</div>
-                        <div class="stat-label">Words</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="sentenceCount">0</div>
-                        <div class="stat-label">Sentences</div>
-                    </div>
-                </div>
-            </section>
+The various sub-fields of AI research are centered around particular goals and the use of particular tools. The traditional goals of AI research include reasoning, knowledge representation, planning, learning, natural language processing, perception, and the ability to move and manipulate objects. General intelligence (the ability to solve an arbitrary problem) is among the field's long-term goals. To solve these problems, AI researchers have adapted and integrated a wide range of problem-solving techniques, including search and mathematical optimization, formal logic, artificial neural networks, and methods based on statistics, probability and economics. AI also draws upon computer science, psychology, linguistics, philosophy, and many other fields.</textarea
+          >
 
-            <section class="summary-section">
-                <div class="section-title">
-                    <i class="fas fa-file-contract"></i>
-                    <h2>Summary</h2>
-                </div>
-                
-                <div class="summary-output empty" id="summaryOutput">
-                    <div class="summary-processing" id="summaryProcessing">
-                        <div class="summary-loader"></div>
-                        <p>Generating summary...</p>
-                    </div>
-                    Your summary will appear here after you click "Summarize Note"
-                </div>
-                
-                <div class="controls">
-                    <button class="btn btn-secondary" id="copyBtn">
-                        <i class="fas fa-copy"></i> 
-                        <span class="btn-text">Copy Summary</span>
-                    </button>
-                    <button class="btn btn-secondary" id="clearSummaryBtn">
-                        <i class="fas fa-broom"></i> 
-                        <span class="btn-text">Clear Summary</span>
-                    </button>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="summaryCharCount">0</div>
-                        <div class="stat-label">Summary Characters</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="summaryWordCount">0</div>
-                        <div class="stat-label">Summary Words</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="reductionPercent">0%</div>
-                        <div class="stat-label">Reduction</div>
-                    </div>
-                </div>
-            </section>
-        </div>
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
 
-        <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> How It Works</h3>
-            <ul>
-                <li>Write or paste your text in the "Your Note" section</li>
-                <li>Adjust the summary length using the slider (lower percentage = shorter summary)</li>
-                <li>Click "Summarize Note" to generate a concise summary</li>
-                <li>The app uses an extractive summarization algorithm that identifies key sentences</li>
-                <li>Your data never leaves your browser - all processing happens locally</li>
-            </ul>
-        </div>
+          <div class="controls">
+            <button class="btn btn-primary" id="summarizeBtn">
+              <div class="btn-loader" id="btnLoader"></div>
+              <i class="fas fa-compress-alt"></i>
+              <span class="btn-text">Summarize Note</span>
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">
+              <i class="fas fa-trash-alt"></i>
+              <span class="btn-text">Clear Note</span>
+            </button>
+            <button class="btn btn-secondary" id="exampleBtn">
+              <i class="fas fa-lightbulb"></i>
+              <span class="btn-text">Load Example</span>
+            </button>
+          </div>
 
-        <footer>
-            <p>Simple Note Summarizer &copy; 2023 | All processing happens in your browser | No data is sent to any server</p>
-            <p>Created for IT presentation by Augustus</p>
-        </footer>
+          <div class="slider-container">
+            <div class="slider-label">Summary Length:</div>
+            <input
+              type="range"
+              min="10"
+              max="90"
+              value="40"
+              class="compression-slider"
+              id="compressionSlider"
+            />
+            <div class="slider-value" id="sliderValue">40%</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-value" id="charCount">0</div>
+              <div class="stat-label">Characters</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="wordCount">0</div>
+              <div class="stat-label">Words</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="sentenceCount">0</div>
+              <div class="stat-label">Sentences</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="summary-section">
+          <div class="section-title">
+            <i class="fas fa-file-contract"></i>
+            <h2>Summary</h2>
+          </div>
+
+          <div class="summary-output empty" id="summaryOutput">
+            <div class="summary-processing" id="summaryProcessing">
+              <div class="summary-loader"></div>
+              <p>Generating summary...</p>
+            </div>
+            Your summary will appear here after you click "Summarize Note"
+          </div>
+
+          <div class="controls">
+            <button class="btn btn-secondary" id="copyBtn">
+              <i class="fas fa-copy"></i>
+              <span class="btn-text">Copy Summary</span>
+            </button>
+            <button class="btn btn-secondary" id="clearSummaryBtn">
+              <i class="fas fa-broom"></i>
+              <span class="btn-text">Clear Summary</span>
+            </button>
+          </div>
+
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-value" id="summaryCharCount">0</div>
+              <div class="stat-label">Summary Characters</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="summaryWordCount">0</div>
+              <div class="stat-label">Summary Words</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="reductionPercent">0%</div>
+              <div class="stat-label">Reduction</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i> How It Works</h3>
+        <ul>
+          <li>Write or paste your text in the "Your Note" section</li>
+          <li>
+            Adjust the summary length using the slider (lower percentage =
+            shorter summary)
+          </li>
+          <li>Click "Summarize Note" to generate a concise summary</li>
+          <li>
+            The app uses an extractive summarization algorithm that identifies
+            key sentences
+          </li>
+          <li>
+            Your data never leaves your browser - all processing happens locally
+          </li>
+        </ul>
+      </div>
+
+      <footer>
+        <p>
+          Simple Note Summarizer &copy; 2023 | All processing happens in your
+          browser | No data is sent to any server
+        </p>
+        <p>Created for IT presentation by Augustus</p>
+      </footer>
     </div>
 
     <!-- Loader overlay -->
     <div class="loader-overlay" id="loaderOverlay">
-        <div class="loader-container">
-            <div class="loader"></div>
-            <div class="loader-text">Processing your note...</div>
-        </div>
+      <div class="loader-container">
+        <div class="loader"></div>
+        <div class="loader-text">Processing your note...</div>
+      </div>
     </div>
 
-    <script>
-        // DOM elements
-        const noteInput = document.getElementById('noteInput');
-        const summaryOutput = document.getElementById('summaryOutput');
-        const summarizeBtn = document.getElementById('summarizeBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const exampleBtn = document.getElementById('exampleBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const clearSummaryBtn = document.getElementById('clearSummaryBtn');
-        const compressionSlider = document.getElementById('compressionSlider');
-        const sliderValue = document.getElementById('sliderValue');
-        const loaderOverlay = document.getElementById('loaderOverlay');
-        const btnLoader = document.getElementById('btnLoader');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progressBar');
-        const summaryProcessing = document.getElementById('summaryProcessing');
-        
-        // Stats elements
-        const charCount = document.getElementById('charCount');
-        const wordCount = document.getElementById('wordCount');
-        const sentenceCount = document.getElementById('sentenceCount');
-        const summaryCharCount = document.getElementById('summaryCharCount');
-        const summaryWordCount = document.getElementById('summaryWordCount');
-        const reductionPercent = document.getElementById('reductionPercent');
-        
-        // Update stats when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStats();
-            // Load the example text that's already in the textarea
-            summarizeExample();
-        });
-        
-        // Update slider value display
-        compressionSlider.addEventListener('input', function() {
-            sliderValue.textContent = `${this.value}%`;
-        });
-        
-        // Summarize button click event
-        summarizeBtn.addEventListener('click', async function() {
-            const text = noteInput.value.trim();
-            if (!text) {
-                alert('Please enter some text to summarize.');
-                return;
-            }
-            
-            // Show loading states
-            showLoading();
-            
-            const compressionRatio = parseInt(compressionSlider.value) / 100;
-            
-            // Use setTimeout to allow UI to update before heavy processing
-            setTimeout(() => {
-                try {
-                    const summary = summarizeText(text, compressionRatio);
-                    displaySummary(summary);
-                } catch (error) {
-                    console.error('Error during summarization:', error);
-                    summaryOutput.textContent = 'An error occurred while generating the summary. Please try again.';
-                    summaryOutput.classList.remove('empty');
-                } finally {
-                    // Hide loading states
-                    hideLoading();
-                }
-            }, 100);
-        });
-        
-        // Clear note button
-        clearBtn.addEventListener('click', function() {
-            if (noteInput.value.trim() && confirm('Are you sure you want to clear the note?')) {
-                noteInput.value = '';
-                updateStats();
-            }
-        });
-        
-        // Load example button
-        exampleBtn.addEventListener('click', function() {
-            noteInput.value = `Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. Leading AI textbooks define the field as the study of "intelligent agents": any system that perceives its environment and takes actions that maximize its chance of achieving its goals. Some popular accounts use the term "artificial intelligence" to describe machines that mimic "cognitive" functions that humans associate with the human mind, such as "learning" and "problem solving", however, this definition is rejected by major AI researchers.
-
-AI applications include advanced web search engines (e.g., Google Search), recommendation systems (used by YouTube, Amazon and Netflix), understanding human speech (such as Siri and Alexa), self-driving cars (e.g., Waymo), automated decision-making and competing at the highest level in strategic game systems (such as chess and Go). As machines become increasingly capable, tasks considered to require "intelligence" are often removed from the definition of AI, a phenomenon known as the AI effect. For instance, optical character recognition is frequently excluded from things considered to be AI, having become a routine technology.
-
-Artificial intelligence was founded as an academic discipline in 1956, and in the years since has experienced several waves of optimism, followed by disappointment and the loss of funding (known as an "AI winter"), followed by new approaches, success and renewed funding. AI research has tried and discarded many different approaches during its lifetime, including simulating the brain, modeling human problem solving, formal logic, large databases of knowledge and imitating animal behavior. In the first decades of the 21st century, highly mathematical and statistical machine learning has dominated the field, and this technique has proved highly successful, helping to solve many challenging problems throughout industry and academia.
-
-The various sub-fields of AI research are centered around particular goals and the use of particular tools. The traditional goals of AI research include reasoning, knowledge representation, planning, learning, natural language processing, perception, and the ability to move and manipulate objects. General intelligence (the ability to solve an arbitrary problem) is among the field's long-term goals. To solve these problems, AI researchers have adapted and integrated a wide range of problem-solving techniques, including search and mathematical optimization, formal logic, artificial neural networks, and methods based on statistics, probability and economics. AI also draws upon computer science, psychology, linguistics, philosophy, and many other fields.`;
-            updateStats();
-            summarizeExample();
-        });
-        
-        // Copy summary button
-        copyBtn.addEventListener('click', function() {
-            const summaryText = summaryOutput.textContent;
-            if (!summaryText || summaryOutput.classList.contains('empty')) {
-                alert('No summary to copy.');
-                return;
-            }
-            
-            navigator.clipboard.writeText(summaryText)
-                .then(() => {
-                    const originalText = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="btn-text">Copied!</span>';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalText;
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    alert('Failed to copy summary to clipboard.');
-                });
-        });
-        
-        // Clear summary button
-        clearSummaryBtn.addEventListener('click', function() {
-            if (!summaryOutput.classList.contains('empty') && confirm('Are you sure you want to clear the summary?')) {
-                clearSummary();
-            }
-        });
-        
-        // Update stats when text changes
-        noteInput.addEventListener('input', updateStats);
-        
-        // Show loading state
-        function showLoading() {
-            // Show full screen loader for large texts
-            const textLength = noteInput.value.length;
-            if (textLength > 5000) {
-                loaderOverlay.classList.add('active');
-            } else {
-                // For smaller texts, just show button loader and summary area loader
-                summarizeBtn.classList.add('loading');
-                btnLoader.classList.add('active');
-                summarizeBtn.disabled = true;
-            }
-            
-            // Show progress bar
-            progressContainer.classList.add('active');
-            progressBar.style.width = '30%';
-            
-            // Show processing animation in summary area
-            summaryProcessing.classList.add('active');
-            
-            // Simulate progress for longer processing
-            if (textLength > 10000) {
-                setTimeout(() => {
-                    progressBar.style.width = '70%';
-                }, 300);
-            }
-        }
-        
-        // Hide loading state
-        function hideLoading() {
-            // Hide loaders
-            loaderOverlay.classList.remove('active');
-            summarizeBtn.classList.remove('loading');
-            btnLoader.classList.remove('active');
-            summarizeBtn.disabled = false;
-            summaryProcessing.classList.remove('active');
-            
-            // Complete progress bar
-            progressBar.style.width = '100%';
-            
-            // Hide progress bar after a delay
-            setTimeout(() => {
-                progressContainer.classList.remove('active');
-                progressBar.style.width = '0%';
-            }, 500);
-        }
-        
-        // Function to summarize text using extractive summarization
-        function summarizeText(text, compressionRatio = 0.4) {
-            // Update progress
-            progressBar.style.width = '50%';
-            
-            // Clean and split text into sentences
-            const sentences = splitIntoSentences(text);
-            if (sentences.length <= 3) return text; // Too short to summarize
-            
-            // Update progress
-            progressBar.style.width = '60%';
-            
-            // Calculate sentence scores based on word frequency
-            const wordFrequencies = calculateWordFrequencies(text);
-            
-            // Update progress
-            progressBar.style.width = '70%';
-            
-            const sentenceScores = calculateSentenceScores(sentences, wordFrequencies);
-            
-            // Update progress
-            progressBar.style.width = '80%';
-            
-            // Determine how many sentences to include in summary
-            const targetSentenceCount = Math.max(2, Math.floor(sentences.length * compressionRatio));
-            
-            // Get top sentences
-            const topSentences = getTopSentences(sentences, sentenceScores, targetSentenceCount);
-            
-            // Update progress
-            progressBar.style.width = '90%';
-            
-            // Return summary with original sentence order
-            return topSentences.join(' ');
-        }
-        
-        // Split text into sentences
-        function splitIntoSentences(text) {
-            // Simple sentence splitting regex (covers common cases)
-            const sentenceRegex = /[^.!?]+[.!?]+/g;
-            const matches = text.match(sentenceRegex);
-            
-            if (!matches) return [text];
-            
-            // Trim whitespace from each sentence
-            return matches.map(sentence => sentence.trim());
-        }
-        
-        // Calculate word frequencies in text
-        function calculateWordFrequencies(text) {
-            // Remove punctuation and convert to lowercase
-            const words = text.toLowerCase()
-                .replace(/[^\w\s]/g, ' ')
-                .split(/\s+/)
-                .filter(word => word.length > 0);
-            
-            // Common stop words to ignore
-            const stopWords = new Set([
-                'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-                'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-                'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should',
-                'can', 'could', 'may', 'might', 'must', 'i', 'you', 'he', 'she', 'it',
-                'we', 'they', 'me', 'him', 'her', 'us', 'them', 'this', 'that', 'these',
-                'those', 'am', 'my', 'your', 'his', 'its', 'our', 'their'
-            ]);
-            
-            // Calculate frequencies
-            const frequencies = {};
-            words.forEach(word => {
-                if (!stopWords.has(word) && word.length > 1) {
-                    frequencies[word] = (frequencies[word] || 0) + 1;
-                }
-            });
-            
-            return frequencies;
-        }
-        
-        // Calculate scores for each sentence
-        function calculateSentenceScores(sentences, wordFrequencies) {
-            const scores = [];
-            
-            sentences.forEach(sentence => {
-                let score = 0;
-                let wordCount = 0;
-                
-                // Clean sentence and split into words
-                const words = sentence.toLowerCase()
-                    .replace(/[^\w\s]/g, ' ')
-                    .split(/\s+/)
-                    .filter(word => word.length > 0);
-                
-                // Add frequency score for each non-stop word
-                words.forEach(word => {
-                    if (wordFrequencies[word]) {
-                        score += wordFrequencies[word];
-                        wordCount++;
-                    }
-                });
-                
-                // Average score per word (normalize by sentence length)
-                const normalizedScore = wordCount > 0 ? score / wordCount : 0;
-                scores.push(normalizedScore);
-            });
-            
-            return scores;
-        }
-        
-        // Get top sentences based on scores
-        function getTopSentences(sentences, sentenceScores, targetCount) {
-            // Create array of sentence-score pairs
-            const sentenceScorePairs = sentences.map((sentence, index) => ({
-                sentence,
-                score: sentenceScores[index],
-                index
-            }));
-            
-            // Sort by score (descending)
-            sentenceScorePairs.sort((a, b) => b.score - a.score);
-            
-            // Take top sentences
-            const topPairs = sentenceScorePairs.slice(0, targetCount);
-            
-            // Sort by original order
-            topPairs.sort((a, b) => a.index - b.index);
-            
-            return topPairs.map(pair => pair.sentence);
-        }
-        
-        // Display summary in the output area
-        function displaySummary(summary) {
-            if (!summary || summary.trim().length === 0) {
-                summaryOutput.textContent = 'Could not generate summary. Please try with a longer text.';
-                summaryOutput.classList.add('empty');
-            } else {
-                summaryOutput.textContent = summary;
-                summaryOutput.classList.remove('empty');
-            }
-            
-            // Update summary stats
-            updateSummaryStats(summary);
-        }
-        
-        // Clear summary
-        function clearSummary() {
-            summaryOutput.textContent = 'Your summary will appear here after you click "Summarize Note"';
-            summaryOutput.classList.add('empty');
-            
-            // Reset summary stats
-            summaryCharCount.textContent = '0';
-            summaryWordCount.textContent = '0';
-            reductionPercent.textContent = '0%';
-        }
-        
-        // Update text statistics
-        function updateStats() {
-            const text = noteInput.value;
-            
-            // Character count
-            const charCountValue = text.length;
-            charCount.textContent = charCountValue.toLocaleString();
-            
-            // Word count
-            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
-            const wordCountValue = text.trim() ? words.length : 0;
-            wordCount.textContent = wordCountValue.toLocaleString();
-            
-            // Sentence count
-            const sentences = splitIntoSentences(text);
-            const sentenceCountValue = text.trim() ? sentences.length : 0;
-            sentenceCount.textContent = sentenceCountValue.toLocaleString();
-        }
-        
-        // Update summary statistics
-        function updateSummaryStats(summary) {
-            if (!summary || summary.includes('Could not generate summary')) {
-                summaryCharCount.textContent = '0';
-                summaryWordCount.textContent = '0';
-                reductionPercent.textContent = '0%';
-                return;
-            }
-            
-            // Summary character count
-            const summaryCharCountValue = summary.length;
-            summaryCharCount.textContent = summaryCharCountValue.toLocaleString();
-            
-            // Summary word count
-            const summaryWords = summary.trim().split(/\s+/).filter(word => word.length > 0);
-            const summaryWordCountValue = summary.trim() ? summaryWords.length : 0;
-            summaryWordCount.textContent = summaryWordCountValue.toLocaleString();
-            
-            // Original word count
-            const originalWords = noteInput.value.trim().split(/\s+/).filter(word => word.length > 0);
-            const originalWordCountValue = noteInput.value.trim() ? originalWords.length : 0;
-            
-            // Calculate reduction percentage
-            if (originalWordCountValue > 0) {
-                const reduction = Math.round(100 - (summaryWordCountValue / originalWordCountValue * 100));
-                reductionPercent.textContent = `${reduction}%`;
-            } else {
-                reductionPercent.textContent = '0%';
-            }
-        }
-        
-        // Summarize the example text on page load
-        function summarizeExample() {
-            const text = noteInput.value.trim();
-            if (!text) return;
-            
-            const compressionRatio = parseInt(compressionSlider.value) / 100;
-            const summary = summarizeText(text, compressionRatio);
-            displaySummary(summary);
-        }
-    </script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
